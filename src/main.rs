@@ -28,7 +28,7 @@ struct Cli {
 
     /// Disables telemetry
     #[arg(short, long, default_value_t = false)]
-    disable_telemetry: bool,
+    telemetry: bool,
 }
 
 #[derive(Subcommand)]
@@ -118,7 +118,7 @@ fn main() {
             let duration = end.duration_since(start).unwrap();
             println!("Time taken: {:?}", duration);
 
-            if !cli.disable_telemetry {
+            if cli.telemetry {
                 collect_telemetry(
                     inputdir.to_string(),
                     outputdir.to_string(),
@@ -143,7 +143,7 @@ fn main() {
             let end = SystemTime::now();
             let duration = end.duration_since(start).unwrap();
             custom_sort(inputdir, outputdir, extension, *verbose, *log);
-            if !cli.disable_telemetry {
+            if cli.telemetry {
                 collect_telemetry(
                     inputdir.to_string(),
                     outputdir.to_string(),
@@ -164,7 +164,7 @@ fn main() {
             let duration = end.duration_since(start).unwrap();
             println!("Time taken: {:?}", duration);
 
-            if !cli.disable_telemetry {
+            if cli.telemetry {
                 collect_telemetry(
                     "N/A".to_string(),
                     "N/A".to_string(),
@@ -182,7 +182,7 @@ fn main() {
         Some(Commands::Update { .. }) => {
             update_filesorterx().expect("Failed to update FileSorterX");
 
-            if !cli.disable_telemetry {
+            if cli.telemetry {
                 collect_telemetry(
                     "N/A".to_string(),
                     "N/A".to_string(),
@@ -200,7 +200,7 @@ fn main() {
         Some(Commands::Benchmark { .. }) => {
             let time = benchmark();
             println!("Time Taken: {:?}", time);
-            if !cli.disable_telemetry {
+            if cli.telemetry {
                 collect_telemetry(
                     "N/A".to_string(),
                     "N/A".to_string(),
@@ -268,7 +268,6 @@ fn collect_telemetry(
         .arg("-A")
         .arg(command)
         .arg(token)
-        .arg("-k")
         .output()
         .expect("Failed to execute command");
 
