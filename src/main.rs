@@ -233,7 +233,7 @@ fn collect_telemetry(
 ) {
     let id = Uuid::new_v4();
     let os = env::consts::OS;
-    let token = dotenv!("TELEMETRY_TOKEN");
+    let token = env::var("TELEMETRY_TOKEN").unwrap_or_else(|_| String::new());
     let mut command = String::new();
 
     command.push_str("'UUID: ");

@@ -16,6 +16,7 @@ self_update = "0.40.0"
 rand = "0.8.5"
 dotenv_codegen = "0.15.0"
 uuid = { version = "1.7.4", features = ["v4"] }
+rayon = "1.7"
 
 [profile.release]
 opt-level = 3

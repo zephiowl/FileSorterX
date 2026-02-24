@@ -3,8 +3,8 @@ mod config;
 mod tests;
 
 use config::EXTENSIONS;
-use rayon::prelude::*;
 use rand::Rng;
+use rayon::prelude::*;
 use self_update::cargo_crate_version;
 use std::{
     collections::HashMap,
@@ -24,7 +24,7 @@ pub fn create_files(amount: u32) {
         let mut rng = rand::thread_rng();
         let random_extension = EXTENSIONS[rng.gen_range(0..EXTENSIONS.len())].0;
         file_name.push_str(random_extension);
-        
+
         if let Err(e) = fs::File::create(&file_name) {
             eprintln!("Error creating file {}: {}", file_name, e);
         }
@@ -43,7 +43,7 @@ pub fn custom_sort(
     let output_directory = Path::new(output_directory);
 
     // Get all the files in the input directory
-    let files = fs::read_dir(input_directory).unwrap();
+    let files: Vec<_> = fs::read_dir(input_directory).unwrap().collect();
 
     // Use parallel processing for better performance
     files.par_iter().for_each(|file| {
@@ -57,7 +57,11 @@ pub fn custom_sort(
             match file.extension() {
                 Some(ext) if ext == extension => {
                     if let Err(e) = fs::create_dir_all(output_directory) {
-                        eprintln!("Error creating directory {}: {}", output_directory.display(), e);
+                        eprintln!(
+                            "Error creating directory {}: {}",
+                            output_directory.display(),
+                            e
+                        );
                         return;
                     }
                     let output_file = output_directory.join(file.file_name().unwrap());
@@ -146,26 +150,23 @@ pub fn get_subdir_by_extension(ext: &str, nesting_level: u8, use_alt: bool) -> P
     path
 }
 
-pub fn write_logfile(file_name: &OsStr, moveto_directory: &Path, input_directory: &str) -> bool {
+pub fn write_logfile(
+    file_name: &OsStr,
+    moveto_directory: &Path,
+    input_directory: &str,
+) -> std::io::Result<()> {
     let logdir = Path::new(input_directory).join("sorter-logs/");
-    fs::create_dir_all(logdir.clone()).unwrap();
+    fs::create_dir_all(logdir.clone())?;
     let mut logfile = fs::OpenOptions::new()
         .append(true)
         .create(true)
-        .open(logdir.to_str().unwrap().to_owned() + "sorter.log")
-        .expect("create failed");
+        .open(logdir.to_str().unwrap().to_owned() + "sorter.log")?;
 
-    logfile
-        .write_all(format!("{:?}", file_name).as_bytes())
-        .expect("write failed");
-    logfile
-        .write_all(" Moved to ".as_bytes())
-        .expect("write failed");
-    logfile
-        .write_all(format!("{:?}\n", moveto_directory.display()).as_bytes())
-        .expect("write failed");
+    logfile.write_all(format!("{:?}", file_name).as_bytes())?;
+    logfile.write_all(" Moved to ".as_bytes())?;
+    logfile.write_all(format!("{:?}\n", moveto_directory.display()).as_bytes())?;
 
-    true
+    Ok(())
 }
 
 pub fn sort_files(
@@ -178,7 +179,7 @@ pub fn sort_files(
 ) -> std::io::Result<()> {
     // Collect all files first for better performance
     let entries: Vec<_> = fs::read_dir(in_dir.clone())?.collect();
-    
+
     // Use parallel processing for better performance on multi-core systems
     entries.par_iter().for_each(|entry| {
         if let Ok(entry) = entry {
@@ -197,13 +198,17 @@ pub fn sort_files(
                 nesting_level,
                 use_alt,
             ));
-            
+
             // Create directories if they don't exist
             if let Err(e) = fs::create_dir_all(&moveto_directory) {
-                eprintln!("Error creating directory {}: {}", moveto_directory.display(), e);
+                eprintln!(
+                    "Error creating directory {}: {}",
+                    moveto_directory.display(),
+                    e
+                );
                 return;
             }
-            
+
             // Move file with error handling
             if let Err(e) = fs::rename(&path, moveto_directory.join(path.file_name().unwrap())) {
                 eprintln!("Error moving file {}: {}", path.display(), e);
@@ -220,7 +225,9 @@ pub fn sort_files(
                     eprintln!("Error creating log directory {}: {}", log_dir, e);
                     return;
                 }
-                if let Err(e) = write_logfile(file_name, &moveto_directory, in_dir.to_str().unwrap()) {
+                if let Err(e) =
+                    write_logfile(file_name, &moveto_directory, in_dir.to_str().unwrap())
+                {
                     eprintln!("Error writing log: {}", e);
                 }
             }
@@ -254,17 +261,17 @@ pub fn benchmark() -> Duration {
 
     let startbench = SystemTime::now();
     create_files(10001);
-    
+
     // Use parallel processing for faster sorting
     let result = sort_files(".".into(), "./benchmark".into(), 3, false, false, false);
     if let Err(e) = result {
         eprintln!("Benchmark failed: {}", e);
     }
-    
+
     if let Err(e) = std::fs::remove_dir_all("./benchmark") {
         eprintln!("Failed to remove benchmark directory: {}", e);
     }
-    
+
     let endbench = SystemTime::now();
     endbench.duration_since(startbench).unwrap()
 }
