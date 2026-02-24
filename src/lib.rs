@@ -3,6 +3,7 @@ mod config;
 mod tests;
 
 use config::EXTENSIONS;
+use rayon::prelude::*;
 use rand::Rng;
 use self_update::cargo_crate_version;
 use std::{
@@ -15,15 +16,19 @@ use std::{
 };
 
 pub fn create_files(amount: u32) {
-    for file in 1..amount {
+    // Use parallel processing for faster file creation
+    (1..amount).into_par_iter().for_each(|file| {
         let mut file_name = String::new();
         file_name.push_str(&file.to_string());
         file_name.push('.');
         let mut rng = rand::thread_rng();
         let random_extension = EXTENSIONS[rng.gen_range(0..EXTENSIONS.len())].0;
         file_name.push_str(random_extension);
-        let _file = fs::File::create(file_name).expect("Failed to create file");
-    }
+        
+        if let Err(e) = fs::File::create(&file_name) {
+            eprintln!("Error creating file {}: {}", file_name, e);
+        }
+    });
 }
 
 pub fn custom_sort(
@@ -40,35 +45,45 @@ pub fn custom_sort(
     // Get all the files in the input directory
     let files = fs::read_dir(input_directory).unwrap();
 
-    // Loop through each file and move it to the appropriate output directory
-    for file in files {
-        let file = file.unwrap().path();
-        let _file_name = match file.file_name() {
-            Some(file_name) => file_name,
-            None => continue,
-        };
+    // Use parallel processing for better performance
+    files.par_iter().for_each(|file| {
+        if let Ok(file) = file {
+            let file = file.path();
+            let file_name = match file.file_name() {
+                Some(file_name) => file_name,
+                None => return,
+            };
 
-        match file.extension() {
-            Some(ext) if ext == extension => {
-                fs::create_dir_all(output_directory).unwrap();
-                let output_file = output_directory.join(file.file_name().unwrap());
-                fs::rename(file.clone(), output_file).unwrap();
+            match file.extension() {
+                Some(ext) if ext == extension => {
+                    if let Err(e) = fs::create_dir_all(output_directory) {
+                        eprintln!("Error creating directory {}: {}", output_directory.display(), e);
+                        return;
+                    }
+                    let output_file = output_directory.join(file.file_name().unwrap());
+                    if let Err(e) = fs::rename(file.clone(), output_file) {
+                        eprintln!("Error moving file {}: {}", file.display(), e);
+                        return;
+                    }
+                }
+                _ => return,
             }
-            _ => continue,
-        }
 
-        if verbose {
-            println!("Moved file: {:?} to {:?}", file, output_directory);
-        }
+            if verbose {
+                println!("Moved file: {:?} to {:?}", file, output_directory);
+            }
 
-        if log {
-            write_logfile(
-                file.as_os_str(),
-                output_directory,
-                input_directory.to_str().unwrap(),
-            );
+            if log {
+                if let Err(e) = write_logfile(
+                    file.as_os_str(),
+                    output_directory,
+                    input_directory.to_str().unwrap(),
+                ) {
+                    eprintln!("Error writing log: {}", e);
+                }
+            }
         }
-    }
+    });
 }
 
 /// # Usage
@@ -161,35 +176,56 @@ pub fn sort_files(
     verbose: bool,
     log: bool,
 ) -> std::io::Result<()> {
-    for entry in fs::read_dir(in_dir.clone())? {
-        let path = entry?.path();
-        let file_name = match path.file_name() {
-            None => continue,
-            Some(f) => f,
-        };
-        let ext = match path.extension() {
-            None => continue,
-            Some(e) => e,
-        };
+    // Collect all files first for better performance
+    let entries: Vec<_> = fs::read_dir(in_dir.clone())?.collect();
+    
+    // Use parallel processing for better performance on multi-core systems
+    entries.par_iter().for_each(|entry| {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            let file_name = match path.file_name() {
+                Some(f) => f,
+                None => return,
+            };
+            let ext = match path.extension() {
+                Some(e) => e,
+                None => return,
+            };
 
-        let moveto_directory = out_dir.join(get_subdir_by_extension(
-            ext.to_str().unwrap(),
-            nesting_level,
-            use_alt,
-        ));
-        fs::create_dir_all(&moveto_directory).unwrap();
-        fs::rename(&path, moveto_directory.join(path.file_name().unwrap()))?;
+            let moveto_directory = out_dir.join(get_subdir_by_extension(
+                ext.to_str().unwrap(),
+                nesting_level,
+                use_alt,
+            ));
+            
+            // Create directories if they don't exist
+            if let Err(e) = fs::create_dir_all(&moveto_directory) {
+                eprintln!("Error creating directory {}: {}", moveto_directory.display(), e);
+                return;
+            }
+            
+            // Move file with error handling
+            if let Err(e) = fs::rename(&path, moveto_directory.join(path.file_name().unwrap())) {
+                eprintln!("Error moving file {}: {}", path.display(), e);
+                return;
+            }
 
-        if verbose {
-            println!("{:?} moved to {:?}", file_name, moveto_directory.display());
+            if verbose {
+                println!("{:?} moved to {:?}", file_name, moveto_directory.display());
+            }
+
+            if log {
+                let log_dir = "sorter-logs";
+                if let Err(e) = fs::create_dir_all(log_dir) {
+                    eprintln!("Error creating log directory {}: {}", log_dir, e);
+                    return;
+                }
+                if let Err(e) = write_logfile(file_name, &moveto_directory, in_dir.to_str().unwrap()) {
+                    eprintln!("Error writing log: {}", e);
+                }
+            }
         }
-
-        if log {
-            let log_dir = "sorter-logs";
-            fs::create_dir_all(log_dir).unwrap();
-            write_logfile(file_name, &moveto_directory, in_dir.to_str().unwrap());
-        }
-    }
+    });
 
     Ok(())
 }
@@ -218,9 +254,17 @@ pub fn benchmark() -> Duration {
 
     let startbench = SystemTime::now();
     create_files(10001);
-    sort_files(".".into(), "./benchmark".into(), 3, false, false, false)
-        .expect("Failed to sort files");
+    
+    // Use parallel processing for faster sorting
+    let result = sort_files(".".into(), "./benchmark".into(), 3, false, false, false);
+    if let Err(e) = result {
+        eprintln!("Benchmark failed: {}", e);
+    }
+    
+    if let Err(e) = std::fs::remove_dir_all("./benchmark") {
+        eprintln!("Failed to remove benchmark directory: {}", e);
+    }
+    
     let endbench = SystemTime::now();
-    std::fs::remove_dir_all("./benchmark").expect("Failed to remove benchmark directory");
     endbench.duration_since(startbench).unwrap()
 }

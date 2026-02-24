@@ -9,14 +9,14 @@ use std::{
     process::Command,
     time::{Duration, SystemTime},
 };
-use uuid::*;
+use uuid::Uuid;
 use FileSorterX::*;
 
 /*
-Made by Xanthus
-Check out my other works at https://github.com/Xanthus58
-Email me at 'business@xanthus.uk'
-You can see more information on my website https://xanthus.uk
+Made by zephiowl
+Check out my other works at https://github.com/zephiowl
+Email me at 'zephiowl@protonmail.com'
+You can see more information on my website https://zephiowl.com
 */
 
 #[derive(Parser)]
