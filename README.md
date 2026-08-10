@@ -1,3 +1,5 @@
+
+
  <p align="center">
  <br><br>
 ➡️
@@ -19,7 +21,7 @@
 # 🤔 What's FileSorterX
 ![FileSorterX-demo-gif](media/FileSorterX.gif)
 
-FileSorterX is a small command line application that automatically sorts files based on their file extension and places them into the appropriate folder. The application is written in Rust, which makes it very very fast. Only taking up to a second to sort over 10,000 files!. As well as being very reliable and efficient.
+FileSorterX is a small command line application that automatically sorts files based on their file extension and places them into the appropriate folder. The application is written in Rust, which makes it very very fast. Only taking up to a second to sort over 10,000 files. As well as being very reliable and efficient.
 
 # 🎉 Features
 - **Sorts thousands of files within a second?** ✔ 
@@ -43,10 +45,10 @@ FileSorterX is a powerful command-line interface (CLI) tool designed to help use
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://xanthus.uk/"><img src="https://avatars.githubusercontent.com/u/66909997?v=4?s=100" width="100px;" alt="Xanthus"/><br /><sub><b>Xanthus</b></sub></a><br /><a href="#ideas-Xanthus58" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/Xanthus58/FileSorterX/commits?author=Xanthus58" title="Code">💻</a> <a href="#design-Xanthus58" title="Design">🎨</a> <a href="#maintenance-Xanthus58" title="Maintenance">🚧</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/FlameOrchid"><img src="https://avatars.githubusercontent.com/u/57208295?v=4?s=100" width="100px;" alt="FlameOrchid"/><br /><sub><b>FlameOrchid</b></sub></a><br /><a href="https://github.com/Xanthus58/FileSorterX/commits?author=FlameOrchid" title="Code">💻</a> <a href="https://github.com/Xanthus58/FileSorterX/issues?q=author%3AFlameOrchid" title="Bug reports">🐛</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/WolfenXVII"><img src="https://avatars.githubusercontent.com/u/91616065?v=4?s=100" width="100px;" alt="Wolfen"/><br /><sub><b>Wolfen</b></sub></a><br /><a href="https://github.com/Xanthus58/FileSorterX/commits?author=WolfenXVII" title="Tests">⚠️</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/okalm"><img src="https://avatars.githubusercontent.com/u/40634668?v=4?s=100" width="100px;" alt="okalm"/><br /><sub><b>okalm</b></sub></a><br /><a href="https://github.com/Xanthus58/FileSorterX/issues?q=author%3Aokalm" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://xanthus.uk/"><img src="https://avatars.githubusercontent.com/u/66909997?v=4?s=" width="100px;" alt="Xanthus"/><br /><sub><b>Xanthus</b></sub></a><br /><a href="#ideas-Xanthus58" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/Xanthus58/FileSorterX/commits?author=Xanthus58" title="Code">💻</a> <a href="#design-Xanthus58" title="Design">🎨</a> <a href="#maintenance-Xanthus58" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/FlameOrchid"><img src="https://avatars.githubusercontent.com/u/57208295?v=4?s=" width="100px;" alt="FlameOrchid"/><br /><sub><b>FlameOrchid</b></sub></a><br /><a href="https://github.com/Xanthus58/FileSorterX/commits?author=FlameOrchid" title="Code">💻</a> <a href="https://github.com/Xanthus58/FileSorterX/issues?q=author%3AFlameOrchid" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/WolfenXVII"><img src="https://avatars.githubusercontent.com/u/91616065?v=4?s=" width="100px;" alt="Wolfen"/><br /><sub><b>Wolfen</b></sub></a><br /><a href="https://github.com/Xanthus58/FileSorterX/commits?author=WolfenXVII" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/okalm"><img src="https://avatars.githubusercontent.com/u/40634668?v=4?s=" width="100px;" alt="okalm"/><br /><sub><b>okalm</b></sub></a><br /><a href="https://github.com/Xanthus58/FileSorterX/issues?q=author%3Aokalm" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
